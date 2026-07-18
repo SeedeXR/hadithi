@@ -2,6 +2,15 @@
 
 All notable changes to Hadithi are documented here.
 
+## [0.1.1] - 2026-07-18
+
+### Fixed
+
+- The custom Inspector could fail to initialize after a domain reload
+  (TypeInitializationException: EditorGUIUtility style values were read in static
+  field initializers, which Unity forbids in that context). Line metrics are now
+  lazy properties, evaluated only while the Inspector draws.
+
 ## [0.1.0] - 2026-07-18
 
 ### Added

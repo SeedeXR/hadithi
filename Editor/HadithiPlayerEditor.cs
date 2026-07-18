@@ -21,8 +21,11 @@ namespace SeedeXR.Hadithi.EditorTools
         SerializedProperty _onAnyBeatStart, _onStoryFinished;
         ReorderableList _beatList;
 
-        static readonly float Line = EditorGUIUtility.singleLineHeight;
-        static readonly float Pad = EditorGUIUtility.standardVerticalSpacing;
+        // Properties, not static readonly fields: reading these EditorGUIUtility values
+        // during static initialization throws (style catalog access is illegal in that
+        // context), which kills the whole editor type. Lazy access is always safe.
+        static float Line => EditorGUIUtility.singleLineHeight;
+        static float Pad => EditorGUIUtility.standardVerticalSpacing;
 
         void OnEnable()
         {
