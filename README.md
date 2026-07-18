@@ -42,11 +42,16 @@ Requires Unity 6000.0 or newer. No dependencies beyond built in modules and uGUI
    Screen, and choose how it ends.
 3. Repeat until your story reads top to bottom. Press Play.
 
-<!-- SCREENSHOT: HadithiPlayer Inspector with an authored story -->
+![The Hadithi Player Inspector with an authored story: Beats, Ambience, languages and global events](Documentation~/inspector.png)
+
+*The Inspector above is the real story of Baraza VR, the project Hadithi was
+extracted from: nine beats, top to bottom.*
 
 ## Concepts in detail
 
 ### Beats
+
+![The Beats list: nine collapsed one line beats, with the dome walk beat expanded showing its zone and timeout](Documentation~/beats.png)
 
 | Field | Meaning |
 |---|---|
@@ -109,8 +114,6 @@ wires. The engine never needs to know what it is waiting for.
 Select the Hadithi Player while in Play Mode and use **start from this beat** on
 any beat to jump straight there. The Inspector also warns inline when a beat is
 missing something it needs (a zone, a button, a screen).
-
-<!-- SCREENSHOT: inline validation warning and start from this beat button -->
 
 ## License
 
