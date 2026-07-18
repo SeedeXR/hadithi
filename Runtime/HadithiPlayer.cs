@@ -150,6 +150,7 @@ namespace SeedeXR.Hadithi
         bool _forceAdvance;
         bool _signal;
         int _jumpIndex = -1;
+        int _startIndex;
         float _beatDeadline = float.PositiveInfinity;
         Coroutine _run;
         readonly List<(Button button, UnityAction action)> _liveButtons =
@@ -182,6 +183,25 @@ namespace SeedeXR.Hadithi
             CurrentBeatIndex = -1;
             IsPlaying = false;
             StopAmbience();
+        }
+
+        /// <summary>
+        /// Starts the story at a specific beat. Beats BEFORE it are fast forwarded:
+        /// their On Beat Start / On Beat End events fire (so world state they set up,
+        /// like activating a group, is consistent) but nothing is shown, played or
+        /// waited on. If the story is already playing this simply jumps.
+        /// Built for testing a single beat; also usable for simple branching.
+        /// </summary>
+        public void PlayFrom(int index)
+        {
+            if (index < 0 || index >= beats.Count)
+            {
+                Debug.LogWarning($"[Hadithi] PlayFrom({index}) is out of range.", this);
+                return;
+            }
+            if (IsPlaying) { JumpTo(index); return; }
+            _startIndex = index;
+            Play();
         }
 
         /// <summary>Forces the current beat to end now, whatever its end condition.</summary>
@@ -274,6 +294,18 @@ namespace SeedeXR.Hadithi
             do
             {
                 int i = 0;
+                if (_startIndex > 0)
+                {
+                    // PlayFrom: fast forward the earlier beats' events so any world
+                    // state they establish exists, without showing or waiting.
+                    for (int f = 0; f < _startIndex && f < beats.Count; f++)
+                    {
+                        beats[f].onBeatStart?.Invoke();
+                        beats[f].onBeatEnd?.Invoke();
+                    }
+                    i = _startIndex;
+                    _startIndex = 0; // later laps (Loop When Finished) start at 0
+                }
                 while (i < beats.Count)
                 {
                     CurrentBeatIndex = i;

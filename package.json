@@ -1,6 +1,6 @@
 {
   "name": "com.seedexr.hadithi",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "displayName": "Hadithi",
   "description": "A designer friendly story engine. Author an entire story in the Inspector as one reorderable list of Beats: each beat shows a screen, plays a timeline in the player's language, and says how it ends. A parallel Ambience list handles looping background audio, effects and light. No code, no IDs, no extra assets in the authoring path.",
   "unity": "6000.0",

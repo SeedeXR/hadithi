@@ -2,6 +2,18 @@
 
 All notable changes to Hadithi are documented here.
 
+## [0.3.0] - 2026-07-18
+
+### Added
+
+- `HadithiPlayer.PlayFrom(index)`: start the story at a specific beat. Earlier
+  beats' On Beat Start / On Beat End events are fast forwarded so any world state
+  they establish is consistent, but nothing is shown, played or waited on.
+- A play button on every beat row in the Inspector: starts the story from that
+  beat. Works in Play Mode, and in Edit Mode it enters Play Mode automatically
+  and begins at the chosen beat. Replaces the old button that only appeared
+  inside an expanded beat during Play Mode.
+
 ## [0.2.0] - 2026-07-18
 
 ### Added

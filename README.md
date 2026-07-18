@@ -105,15 +105,21 @@ wires. The engine never needs to know what it is waiting for.
 | `Advance()` | Force the current beat to end now |
 | `RequestAdvance()` | Polite advance: honored on Controller Press beats, and on Button Clicked beats when the safety fallback is on, ignored otherwise |
 | `Signal()` | Complete a Wait For Signal beat |
-| `JumpTo(index)` / `JumpTo(name)` | Jump to a beat (testing, or simple branching) |
+| `JumpTo(index)` / `JumpTo(name)` | Jump to a beat while playing (testing, or simple branching) |
+| `PlayFrom(index)` | Start the story at a beat; earlier beats' events are fast forwarded so world state stays consistent |
 | `SetLanguage(index)` / `SetLanguage(nameOrCode)` | Switch the active language |
 | `onAnyBeatStart` (event) | Fired for every beat, useful for one time wiring such as re arming input |
 
 ## Testing tools
 
-Select the Hadithi Player while in Play Mode and use **start from this beat** on
-any beat to jump straight there. The Inspector also warns inline when a beat is
-missing something it needs (a zone, a button, a screen).
+Every beat row has a **play button** on its right edge. Click it to start the
+story from exactly that beat: in Play Mode it jumps there immediately, and in
+Edit Mode it enters Play Mode for you and begins at the chosen beat. Earlier
+beats' events are fast forwarded first, so anything they set up (an activated
+group, a changed light) is in place when your beat starts.
+
+The Inspector also warns inline when a beat is missing something it needs
+(a zone, a button, a screen).
 
 ## License
 

@@ -11,11 +11,36 @@ namespace SeedeXR.Hadithi.EditorTools
     ///   - only the fields relevant to the chosen end condition,
     ///   - one timeline slot per language, labeled with the language name and code,
     ///   - inline validation warnings,
-    ///   - a "start from this beat" button in Play Mode.
+    ///   - a play button on every beat row: starts the story from that beat, entering
+    ///     Play Mode first when clicked in Edit Mode.
     /// </summary>
     [CustomEditor(typeof(HadithiPlayer))]
     public class HadithiPlayerEditor : Editor
     {
+        const string PlayFromKey = "SeedeXR.Hadithi.PlayFromBeat";
+
+        // Edit-mode "play from this beat": the click stores the beat index and enters
+        // Play Mode; after the domain reload this hook fires PlayFrom on the player.
+        // (PlayFrom no-ops into JumpTo if the player's own Start already began playing.)
+        [InitializeOnLoadMethod]
+        static void HookEditModePlayFrom()
+        {
+            EditorApplication.playModeStateChanged += state =>
+            {
+                if (state != PlayModeStateChange.EnteredPlayMode) return;
+                int index = SessionState.GetInt(PlayFromKey, -1);
+                if (index < 0) return;
+                SessionState.EraseInt(PlayFromKey);
+                EditorApplication.delayCall += () =>
+                {
+                    var player = Object.FindFirstObjectByType<HadithiPlayer>(FindObjectsInactive.Include);
+                    if (player == null) return;
+                    player.StopStory();
+                    player.PlayFrom(index);
+                };
+            };
+        }
+
         SerializedProperty _playOnStart, _loopWhenFinished, _controllerAlwaysAdvances;
         SerializedProperty _languages, _currentLanguage, _beats, _ambience;
         SerializedProperty _onAnyBeatStart, _onStoryFinished;
@@ -116,9 +141,29 @@ namespace SeedeXR.Hadithi.EditorTools
             SerializedProperty endsWhen = beat.FindPropertyRelative("endsWhen");
 
             rect.y += Pad;
-            var header = new Rect(rect.x + 12f, rect.y, rect.width - 12f, Line);
+            var header = new Rect(rect.x + 12f, rect.y, rect.width - 40f, Line);
             string summary = $"{index + 1}.  {name.stringValue}      [{ObjectNames.NicifyVariableName(((HadithiPlayer.EndCondition)endsWhen.enumValueIndex).ToString())}]";
             beat.isExpanded = EditorGUI.Foldout(header, beat.isExpanded, summary, true);
+
+            // Always-available "start from this beat": the core testing capability.
+            var playRect = new Rect(rect.x + rect.width - 26f, rect.y, 26f, Line);
+            if (GUI.Button(playRect, new GUIContent("▶",
+                "Start the story from this beat (enters Play Mode first if needed). " +
+                "Earlier beats' events are fast forwarded so world state stays consistent.")))
+            {
+                if (Application.isPlaying)
+                {
+                    var player = (HadithiPlayer)target;
+                    player.StopStory();
+                    player.PlayFrom(index);
+                }
+                else
+                {
+                    SessionState.SetInt(PlayFromKey, index);
+                    EditorApplication.EnterPlaymode();
+                }
+            }
+
             if (!beat.isExpanded) return;
 
             float y = rect.y + Line + Pad;
@@ -189,15 +234,6 @@ namespace SeedeXR.Hadithi.EditorTools
                 y += h2 + Pad;
             }
 
-            if (Application.isPlaying)
-            {
-                if (GUI.Button(new Rect(x, y, 180f, Line), "Start from this beat"))
-                {
-                    var player = (HadithiPlayer)target;
-                    if (!player.IsPlaying) player.Play();
-                    player.JumpTo(index);
-                }
-            }
         }
 
         float BeatHeight(int index)
@@ -239,7 +275,6 @@ namespace SeedeXR.Hadithi.EditorTools
                 h += EditorGUI.GetPropertyHeight(beat.FindPropertyRelative("onBeatEnd")) + Pad;
             }
 
-            if (Application.isPlaying) h += Line + Pad;               // start from this beat
             return h + Pad;
         }
 
