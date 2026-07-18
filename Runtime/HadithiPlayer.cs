@@ -137,9 +137,20 @@ namespace SeedeXR.Hadithi
             CurrentBeatIndex >= 0 && CurrentBeatIndex < beats.Count ? beats[CurrentBeatIndex] : null;
         public bool IsPlaying { get; private set; }
 
+        /// <summary>
+        /// Seconds until the current beat's timeout elapses (Wait Seconds duration, or
+        /// the optional timeout on zone / signal beats). Negative when the current beat
+        /// has no time limit or nothing is playing. Poll this to display a countdown.
+        /// </summary>
+        public float CurrentBeatRemainingSeconds =>
+            IsPlaying && !float.IsPositiveInfinity(_beatDeadline)
+                ? Mathf.Max(0f, _beatDeadline - Time.time)
+                : -1f;
+
         bool _forceAdvance;
         bool _signal;
         int _jumpIndex = -1;
+        float _beatDeadline = float.PositiveInfinity;
         Coroutine _run;
         readonly List<(Button button, UnityAction action)> _liveButtons =
             new List<(Button, UnityAction)>();
@@ -366,8 +377,10 @@ namespace SeedeXR.Hadithi
                     return WaitUntilDone(() => beat.zone.HasEntered, beat.seconds);
 
                 case EndCondition.WaitSeconds:
-                    float deadline = Time.time + Mathf.Max(0f, beat.seconds);
-                    return WaitUntilDone(() => Time.time >= deadline, 0f);
+                    // The wait IS the timeout, so the countdown surfaces through
+                    // CurrentBeatRemainingSeconds like every other timed beat.
+                    // Epsilon keeps the documented "0 advances immediately" contract.
+                    return WaitUntilDone(() => false, Mathf.Max(0.0001f, beat.seconds));
 
                 case EndCondition.WaitForSignal:
                     return WaitUntilDone(() => _signal, beat.seconds);
@@ -378,14 +391,16 @@ namespace SeedeXR.Hadithi
         }
 
         // Waits until the condition holds, Advance()/JumpTo() force it, or the
-        // timeout elapses (timeout 0 means no timeout).
+        // timeout elapses (timeout 0 means no timeout). The deadline is kept in a
+        // field so CurrentBeatRemainingSeconds can expose the live countdown.
         IEnumerator WaitUntilDone(Func<bool> done, float timeoutSeconds)
         {
-            float deadline = timeoutSeconds > 0f ? Time.time + timeoutSeconds : float.PositiveInfinity;
-            while (!_forceAdvance && !done() && Time.time < deadline)
+            _beatDeadline = timeoutSeconds > 0f ? Time.time + timeoutSeconds : float.PositiveInfinity;
+            while (!_forceAdvance && !done() && Time.time < _beatDeadline)
             {
                 yield return null;
             }
+            _beatDeadline = float.PositiveInfinity;
         }
 
         // ── Screens, timelines, ambience ────────────────────────────────────────

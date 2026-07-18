@@ -2,6 +2,21 @@
 
 All notable changes to Hadithi are documented here.
 
+## [0.2.0] - 2026-07-18
+
+### Added
+
+- `HadithiPlayer.CurrentBeatRemainingSeconds`: live countdown for the current
+  beat's time limit (Wait Seconds duration, or the optional timeout on zone and
+  signal beats). Negative when the beat has no time limit. Poll it from a display
+  component to show a timer.
+
+### Changed
+
+- Wait Seconds beats now share the same deadline plumbing as other timed beats,
+  so their countdown is visible through the new property as well. The documented
+  "0 seconds advances immediately" behavior is unchanged.
+
 ## [0.1.1] - 2026-07-18
 
 ### Fixed
